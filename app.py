@@ -3,6 +3,8 @@ import json
 import os
 from datetime import datetime
 from environs import Env
+import pickle
+import uuid
 
 env = Env()
 env.read_env()
@@ -55,77 +57,30 @@ def post_cart_items():
 
 @app.route('/yandex/order/accept', methods=['POST'])
 def post_order_accept():
+    """
+    Передача заказа и запрос на принятие заказа
+    :return:
+    """
     # https://yandex.ru/dev/market/partner-marketplace-cd/doc/dg/reference/post-order-accept.html
     authorization = request.headers.get('Authorization')
     if authorization is None:
         return 'Authorization token not specified', 401
     if authorization in AUTHORIZATIONS_TOKEN:
         request_data = request.get_json()
-        print(request_data)
-        with open(f'{os.getcwd()}/order_accept.json', 'w', encoding='utf8') as file:
-            json.dump(request_data, file, indent=4, ensure_ascii=False)
-
-        return 'Success', 200
-
-        # items = request_data.get('skus')
-        # warehouse_id = request_data.get('warehouseId')
-        #
-        # datetime_now = datetime.now().astimezone().replace(microsecond=0).isoformat()
-        #
-        # if items is None or warehouse_id is None:
-        #     return 'Не корректные данные в теле запроса', 400
-        #
-        # items_data_bd = load_file_json()
-        # if items_data_bd is None:
-        #     return 'Ошибка в работе сервера', 500
-        #
-        # data_items = []
-        # for item_ in items:
-        #     item_dict = search(item_, items_data_bd)
-        #     if item_dict is None or len(item_dict) == 0:
-        #         continue
-        #     data_items.append(
-        #         {'sku': item_,
-        #          'warehouseId': warehouse_id,
-        #          'items': [
-        #              {'type': 'FIT',
-        #               'count': item_dict[0]['count'],
-        #               'updatedAt': datetime_now
-        #               }
-        #          ]
-        #          }
-        #     )
-        # all_data = {'skus': data_items}
-        #
-
-
-        # # ОТВЕТ
-        # HTTP / 1.1
-        # 200
-        # OK
-        # ...
-        #
-        # {
-        #     "cart":
-        #         {
-        #             "items":
-        #                 [
-        #                     {
-        #                         "feedId": 12345,
-        #                         "offerId": "4609283881",
-        #                         "count": 3,
-        #                         "delivery": true
-        #                     },
-        #                     {
-        #                         "feedId": 12346,
-        #                         "offerId": "4607632101",
-        #                         "count": 1,
-        #                         "delivery": false
-        #                     }
-        #                 ]
-        #         }
-        # }
-        return jsonify(request_data), 200
+        new_data = {
+            'key': authorization,
+            'order': request_data
+        }
+        order_id = request_data.get('order').get('id')
+        with open(f'{os.getcwd()}/data_orders/{uuid.uuid4()}.pickle', 'wb') as f:
+            pickle.dump(new_data, f)
+        response_data = {
+            'order': {
+                'accepted': True,
+                'id': order_id
+            }
+        }
+        return jsonify(response_data), 200
     else:
         return 'Access denied, invalid authorization token', 401
 
