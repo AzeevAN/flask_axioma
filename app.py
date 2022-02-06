@@ -87,72 +87,24 @@ def post_order_accept():
 
 @app.route('/yandex/order/status', methods=['POST'])
 def post_order_status():
+    """
+    Уведомление о смене статуса заказа
+    :return:
+    """
     # https://yandex.ru/dev/market/partner-marketplace-cd/doc/dg/reference/post-order-status.html
     authorization = request.headers.get('Authorization')
     if authorization is None:
         return 'Authorization token not specified', 401
     if authorization in AUTHORIZATIONS_TOKEN:
         request_data = request.get_json()
-        print(request_data)
-        # items = request_data.get('skus')
-        # warehouse_id = request_data.get('warehouseId')
-        #
-        # datetime_now = datetime.now().astimezone().replace(microsecond=0).isoformat()
-        #
-        # if items is None or warehouse_id is None:
-        #     return 'Не корректные данные в теле запроса', 400
-        #
-        # items_data_bd = load_file_json()
-        # if items_data_bd is None:
-        #     return 'Ошибка в работе сервера', 500
-        #
-        # data_items = []
-        # for item_ in items:
-        #     item_dict = search(item_, items_data_bd)
-        #     if item_dict is None or len(item_dict) == 0:
-        #         continue
-        #     data_items.append(
-        #         {'sku': item_,
-        #          'warehouseId': warehouse_id,
-        #          'items': [
-        #              {'type': 'FIT',
-        #               'count': item_dict[0]['count'],
-        #               'updatedAt': datetime_now
-        #               }
-        #          ]
-        #          }
-        #     )
-        # all_data = {'skus': data_items}
-        #
-
-
-        # # ОТВЕТ
-        # HTTP / 1.1
-        # 200
-        # OK
-        # ...
-        #
-        # {
-        #     "cart":
-        #         {
-        #             "items":
-        #                 [
-        #                     {
-        #                         "feedId": 12345,
-        #                         "offerId": "4609283881",
-        #                         "count": 3,
-        #                         "delivery": true
-        #                     },
-        #                     {
-        #                         "feedId": 12346,
-        #                         "offerId": "4607632101",
-        #                         "count": 1,
-        #                         "delivery": false
-        #                     }
-        #                 ]
-        #         }
-        # }
-        return jsonify(request_data), 200
+        new_data = {
+            'key': authorization,
+            'order': request_data,
+            'change_status': True
+        }
+        with open(f'{os.getcwd()}/data_orders/{uuid.uuid4()}.pickle', 'wb') as f:
+            pickle.dump(new_data, f)
+        return '', 200
     else:
         return 'Access denied, invalid authorization token', 401
 
