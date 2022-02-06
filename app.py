@@ -130,6 +130,34 @@ def post_stocks():
     return 'Data loaded successfully', 201
 
 
+@app.route('/yandex/order/response', methods=['POST'])
+def post_order_response():
+    """
+    Возвращает список заказов полученных яндексом
+    :return:
+    """
+    authorization = request.headers.get('Authorization')
+    if authorization is None:
+        return 'Authorization token not specified', 401
+    if authorization != AUTH_CREATE_TOKEN:
+        return 'Access denied, invalid authorization token', 401
+    path = os.getcwd() + '/data_orders'
+    response_data = []
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(".pickle"):
+                path_file = os.path.join(root, file)
+                with open(path_file, 'rb') as f:
+                    data_new = pickle.load(f)
+                    response_data.append(
+                        {
+                            'id_file': file.split('.')[0],
+                            "order": data_new
+                        }
+                    )
+    return jsonify(response_data), 200
+
+
 @app.route('/yandex/stocks', methods=['POST'])
 def get_item_stock():
     """
