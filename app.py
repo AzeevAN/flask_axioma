@@ -158,6 +158,28 @@ def post_order_response():
     return jsonify(response_data), 200
 
 
+@app.route('/yandex/order/remove_id', methods=['POST'])
+def post_order_remove_id():
+    """
+    Удаляет заказ из базы полученных заказов от яндекс
+    :return:
+    """
+    authorization = request.headers.get('Authorization')
+    if authorization is None:
+        return 'Authorization token not specified', 401
+    if authorization != AUTH_CREATE_TOKEN:
+        return 'Access denied, invalid authorization token', 401
+    request_data = request.get_json()
+    list_id_file = request_data.get('id_file')
+    path = os.getcwd() + '/data_orders'
+    for id_file in list_id_file:
+        try:
+            os.remove(path=path + f'/{id_file}.pickle')
+        except Exception as error:
+            print(error)
+    return 'Success', 200
+
+
 @app.route('/yandex/stocks', methods=['POST'])
 def get_item_stock():
     """
