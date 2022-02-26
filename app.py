@@ -172,12 +172,15 @@ def post_order_remove_id():
     request_data = request.get_json()
     list_id_file = request_data.get('id_file')
     path = os.getcwd() + '/data_orders'
+    list_remove_file = []
     for id_file in list_id_file:
         try:
             os.remove(path=path + f'/{id_file}.pickle')
+            list_remove_file.append({'success': id_file})
         except Exception as error:
             print(error)
-    return 'Success', 200
+            list_remove_file.append({'error': error})
+    return jsonify(list_remove_file), 200
 
 
 @app.route('/yandex/stocks', methods=['POST'])
