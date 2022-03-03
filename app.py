@@ -71,7 +71,7 @@ def post_order_accept():
             'key': authorization,
             'order': request_data
         }
-        order_id = request_data.get('order').get('id')
+        order_id = str(request_data.get('order').get('id'))
         with open(f'{os.getcwd()}/data_orders/{uuid.uuid4()}.pickle', 'wb') as f:
             pickle.dump(new_data, f)
         response_data = {
